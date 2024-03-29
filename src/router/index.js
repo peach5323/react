@@ -18,7 +18,8 @@ const router = createBrowserRouter([
         element: <Month />
       }
     ]
-  },  {
+  },
+  {
     path: '/new',
     element: <New />
   },

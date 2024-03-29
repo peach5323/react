@@ -15,13 +15,18 @@ const billStore = createSlice({
 })
 
 const { setBillList } = billStore.actions
-const getBillList = async (dispatch) => {
-  // 编写异步请求
-  const res = await axios.get('http://localhost:8888/ka')
-  // 触发同步reducer
-  dispatch(setBillList(res.data))
+// 编写异步
+const getBillList = () => {
+  return async (dispatch) => {
+    // 编写异步请求
+    const res = await axios.get('http://localhost:8888/ka')
+    // 触发同步reducer
+    dispatch(setBillList(res.data))
+  }
 }
 
-export {getBillList}
+export { getBillList }
+
+// 导出reducer
 const reducer = billStore.reducer
 export default reducer
