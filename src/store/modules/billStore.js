@@ -1,4 +1,4 @@
-import { createSlice, dispatch } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
 const billStore = createSlice({
@@ -15,7 +15,7 @@ const billStore = createSlice({
 })
 
 const { setBillList } = billStore.actions
-const getBillList = async () => {
+const getBillList = async (dispatch) => {
   // 编写异步请求
   const res = await axios.get('http://localhost:8888/ka')
   // 触发同步reducer
