@@ -1,33 +1,65 @@
 import { NavBar, DatePicker } from 'antd-mobile'
 import './index.scss'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import classNames from 'classnames'
 import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
 import _ from 'lodash'
+import DailyBill from './components/DailyBill'
 
 const Month = () => {
   // 控制弹窗开关
   const [dateVisible, setDateVisible] = useState(false)
   
   // 选择时间显示
-  const [selDate, setSelDate] = useState(dayjs().format('YYYY | M'))
-  
+  const [selDate, setSelDate] = useState(dayjs().format('YYYY-MM'))
+
   // 按月做数据分组
   const billList = useSelector(state => state.bill.billList)
   const monthGroup = useMemo(() => {
-    return _.groupBy(billList, item => dayjs(item.date).format('YYYY | M'))
+    return _.groupBy(billList, item => dayjs(item.date).format('YYYY-MM'))
   }, [billList])
 
-  console.log(monthGroup);
+  // console.log(monthGroup);
 
+  const [selBillList, setSelBillList]=useState([])
   const onConfirm = (date) => {
     setDateVisible(false)
     // console.log(date);
-  //  const monthKey= dayjs(date).format('YYYY | M')
-    //   setSelDate(monthGroup[monthKey])
-    setSelDate(dayjs(date).format('YYYY | M'))
+    const monthKey = dayjs(date).format('YYYY-MM')
+    setSelDate(monthKey)
+    setSelBillList(monthGroup[monthKey])
   }
+
+  const monthResult = useMemo(() => {
+    const pay = selBillList?.filter(item => item.type === 'pay').reduce((s, i) => s + i.money, 0)
+    const income = selBillList?.filter(item => item.type === 'income').reduce((s, i) => s + i.money, 0)
+    return {
+      pay: pay || 0,
+      income: income || 0,
+      total: pay + income || 0
+   }
+  }, [selBillList])
+
+  // 初始化加载渲染数据
+  useEffect(() => {
+    const dayKey = dayjs().format('YYYY-MM')
+    if (monthGroup[dayKey]) {
+      
+      setSelBillList(monthGroup[dayKey])
+    }
+  }, [monthGroup])
+
+  // 月度账单-单日统计列表
+  const dayGroup = useMemo(() => {
+    const dayBillList = _.groupBy(selBillList, item => dayjs(item.date).format('YYYY-MM-DD'))
+    return {
+      dayKeys: Object.keys(dayBillList),
+      dayBillList
+    }
+  }, [selBillList])
+
+  // console.log(dayGroup);
 
   return (
     <div className="monthlyBill">
@@ -47,15 +79,15 @@ const Month = () => {
           {/* 统计区域 */}
           <div className='twoLineOverview'>
             <div className="item">
-              <span className="money">{100}</span>
+              <span className="money">{monthResult?.pay.toFixed(2)}</span>
               <span className="type">支出</span>
             </div>
             <div className="item">
-              <span className="money">{200}</span>
+              <span className="money">{monthResult?.income.toFixed(2)}</span>
               <span className="type">收入</span>
             </div>
             <div className="item">
-              <span className="money">{200}</span>
+              <span className="money">{monthResult?.total.toFixed(2)}</span>
               <span className="type">结余</span>
             </div>
           </div>
@@ -71,6 +103,12 @@ const Month = () => {
             max={new Date()}
           />
         </div>
+        {
+          dayGroup.dayKeys.map(dayKey => (
+            <DailyBill key={dayKey} date={dayKey} billList={dayGroup.dayBillList[dayKey] } />
+          ))
+}
+       
       </div>
     </div >
   )
