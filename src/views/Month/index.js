@@ -21,6 +21,7 @@ const Month = () => {
   }, [billList])
 
   // console.log(monthGroup);
+  // console.log(dayjs('2024-02-29 18:02:40').format('YYYY-MM'));
 
   const [selBillList, setSelBillList]=useState([])
   const onConfirm = (date) => {

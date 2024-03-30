@@ -7,6 +7,7 @@ import Icon from '@/components/Icon'
 import { billListData } from '@/contants'
 import { addBillList } from '@/store/modules/billStore'
 import { useDispatch } from 'react-redux'
+import dayjs from 'dayjs'
 
 const New = () => {
   const navigate = useNavigate()
@@ -18,6 +19,10 @@ const New = () => {
   const [money, setMoney] = useState(0)
   // 收集账单类型
   const [useFor, setUseFor] = useState('')
+  // 控制时间选择器打开关闭
+  const [dateVisible, setDateVisible] = useState(false)
+  // 存储选择后的时间
+  const [selDate, setSelDate] = useState(dayjs(new Date()).format('YYYY-MM-DD HH:mm:ss') )
   
   const moneyChange = (value) => {
     setMoney(value)
@@ -30,10 +35,18 @@ const New = () => {
     const data = {
       type: billType,
       money: billType === 'pay' ? -money : +money,
-      data: new Date(),
+      date: dayjs(`${selDate} ${dayjs().format(' HH:mm:ss')}`),
       useFor
     }
     dispatch(addBillList(data))
+    navigate('/month')
+  }
+
+  
+  // 确认时间选择
+  const dateConfirm = (value) => {
+    setSelDate(dayjs(value).format('YYYY-MM-DD'))
+    setDateVisible(false)
   }
 
   return (
@@ -64,11 +77,15 @@ const New = () => {
           <div className="kaForm">
             <div className="date">
               <Icon type="calendar" className="icon" />
-              <span className="text">{'今天'}</span>
+              <span onClick={() => { setDateVisible(true) }} className="text">{dayjs(selDate).format('YYYY-MM-DD')}</span>
+              {/* 时间选择器 */}
               <DatePicker
                 className="kaDate"
                 title="记账日期"
                 max={new Date()}
+                visible={dateVisible}
+                onConfirm={dateConfirm}
+                onClose={()=>setDateVisible(false)}
               />
             </div>
             <div className="kaInput">
@@ -96,7 +113,7 @@ const New = () => {
                     <div
                       className={classNames(
                         'item',
-                        ''
+                        useFor===item.type?'selected':''
                       )}
                       key={item.type}
                       onClick={() => setUseFor(item.type)}
